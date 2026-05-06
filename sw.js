@@ -1,8 +1,9 @@
-const CACHE_NAME = 'scenart-v2';
+const CACHE_NAME = 'scenart-v3';
 const ASSETS = [
   './',
   './index.html',
-  './manifest.json'
+  './manifest.json',
+  './icon.png'
 ];
 
 self.addEventListener('install', (e) => {
@@ -13,7 +14,16 @@ self.addEventListener('install', (e) => {
 });
 
 self.addEventListener('activate', (e) => {
-  e.waitUntil(clients.claim());
+  e.waitUntil(
+    caches.keys().then((keys) => {
+      return Promise.all(
+        keys.map((key) => {
+          if (key !== CACHE_NAME) return caches.delete(key);
+        })
+      );
+    })
+  );
+  return self.clients.claim();
 });
 
 self.addEventListener('fetch', (e) => {
