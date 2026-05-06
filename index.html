@@ -4,10 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Scenart Studio</title>
-    <link rel="manifest" href="manifest.json">
+    
+    <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#121212">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="./icon.png">
+    <link rel="icon" type="image/png" href="./icon.png">
+
     <style>
         :root {
             --bg-color: #121212;
@@ -173,12 +177,12 @@
     <div class="signature">L.B © 2026 — PARIS</div>
 
     <script>
-        // SCRIPT REGISTRATION PWA
+        // Enregistrement optimisé du Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                .then(reg => console.log('SW Registered'))
-                .catch(err => console.log('SW Error:', err));
+                navigator.serviceWorker.register('./sw.js', { scope: './' })
+                .then(reg => console.log('PWA Ready'))
+                .catch(err => console.error('PWA Fail', err));
             });
         }
 
@@ -320,3 +324,39 @@
             b.addEventListener('touchend', (e) => {
                 clearTimeout(d_timer);
                 if (d_target) { d_target.classList.remove('drag'); d_target.style.transform = ""; d_target = null; }
+                else if (Math.abs(e.changedTouches[0].clientY - s_y) < 10) f_act(b);
+            });
+        }
+
+        function f_act(c) {
+            if (e_mode) { if (c.buf) { delete c.buf; c.classList.remove('filled'); } return; }
+            if (state === "REC" && a_slot === c) f_stop();
+            else if (state === "IDLE") { if (c.buf) f_play(c); else f_start(c); }
+        }
+
+        async function f_start(c) {
+            try {
+                const s = await navigator.mediaDevices.getUserMedia({ audio: true });
+                m_rec = new MediaRecorder(s); a_chunks = [];
+                m_rec.ondataavailable = e => a_chunks.push(e.data);
+                m_rec.onstop = async () => {
+                    const b = new Blob(a_chunks);
+                    const ab = await b.arrayBuffer();
+                    c.buf = await ctx.decodeAudioData(ab);
+                    c.classList.add('filled'); f_check();
+                };
+                m_rec.start(); state = "REC"; a_slot = c; c.classList.add('rec');
+                info.innerText = "ENREGISTREMENT...";
+            } catch (err) { info.innerText = "ERREUR MICRO"; }
+        }
+
+        function f_stop() { m_rec.stop(); a_slot.classList.remove('rec'); state = "IDLE"; a_slot = null; info.innerText = "STUDIO SCENART"; }
+
+        function f_play(c) {
+            const s = ctx.createBufferSource(); s.buffer = c.buf; s.connect(ctx.destination);
+            state = "PLAY"; a_slot = c; c.classList.add('play');
+            s.start(); s.onended = () => { c.classList.remove('play'); state = "IDLE"; a_slot = null; };
+        }
+    </script>
+</body>
+</html>
