@@ -1,8 +1,7 @@
-
 {
   "name": "Scenart Studio",
   "short_name": "Scenart",
-  "description": "Studio d'enregistrement et de mixage audio multipiste.",
+  "description": "Enregistrement vocal multipiste",
   "start_url": "./index.html",
   "display": "standalone",
   "orientation": "portrait",
@@ -12,7 +11,8 @@
     {
       "src": "https://cdn-icons-png.flaticon.com/512/1041/1041267.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "https://cdn-icons-png.flaticon.com/512/1041/1041267.png",
